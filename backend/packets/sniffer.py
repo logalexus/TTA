@@ -1,17 +1,29 @@
+from threading import Thread
 from typing import Dict
 from pyshark.tshark.tshark import get_tshark_interfaces
-from packets.flow import Flow
-from packets.stream import Stream
+from backend.packets.flow import Flow
+from backend.packets.stream import Stream
 from queue import Queue
 
 import pyshark
 
 
 class Sniffer():
-    def __init__(self) -> None:
+    def __init__(self, interface: str, port: int) -> None:
         self.streams: Dict[Flow, Stream] = {}
-        self.completedStreams: Queue = None
+        self.output_streams = Queue()
+        self.interface = interface
+        self.target_port = port
 
+    def run(self):
+        sniffer_thread = Thread(
+            target=self.__run,
+            args=(self.output_streams, self.interface, self.target_port)
+        )
+        sniffer_thread.start()
+
+    
+    
     def assembly_streams(self, pkt, target_port: int):
         ip = pkt.ip
         tcp = pkt.tcp
@@ -29,7 +41,7 @@ class Sniffer():
                 stream.packets.append(pkt)
                 self.streams[flow] = stream
 
-    def run(self, streams: Queue, interface: str, port: int):
+    def __run(self, streams: Queue, interface: str, port: int):
         global completedStreams
         completedStreams = streams
         cap = pyshark.LiveCapture(interface=interface,
@@ -40,10 +52,3 @@ class Sniffer():
             self.assembly_streams(pkt, target_port=port)
 
 
-def show_stream(stream: Stream):
-    for pkt in stream.packets:
-        if "tcp.payload" in pkt.tcp._all_fields:
-            data = pkt.tcp.payload
-            data = bytes.fromhex(data.replace(":", ""))
-            data = data.decode(errors="ignore")
-            print(data)

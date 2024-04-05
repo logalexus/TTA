@@ -1,20 +1,28 @@
 from queue import Queue
-from fastapi import FastAPI
-from threading import Thread
-from packets.sniffer import Sniffer, show_stream
+from fastapi import FastAPI, WebSocket
+from backend.packets.stream import Stream
+from backend.packets.sniffer import Sniffer
 
-# app = FastAPI()
+app = FastAPI()
 
-sniffer = Sniffer()
-streams = Queue()
+sniffer = Sniffer("eth0", 5000)
+sniffer.run()
 
-sniffer_thread = Thread(
-    target=sniffer.run,
-    args=(streams, "enp0s3", 5000)
-)
-sniffer_thread.start()
+# while True:
+#     stream: Stream = sniffer.output_streams.get()
+#     # stream.show()
+#     # print(stream.to_json())
+#     sniffer.output_streams.task_done()
 
-while True:
-    stream = streams.get()
-    show_stream(stream)
-    streams.task_done()
+
+@app.websocket("/ws")
+async def streams_websocket(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        stream: Stream = sniffer.output_streams.get()
+        await websocket.send_text(stream.to_json())
+        sniffer.output_streams.task_done()
+        
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
