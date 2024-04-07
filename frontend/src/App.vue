@@ -1,23 +1,13 @@
 <template>
     <div id="app">
-        <div class="sidebar">
-            <h4 class="text-center">TCP Packages</h4>
-            <ul class="list-group">
-                <li class="list-group-item">
-                    Package 1
-                </li>
-            </ul>
-        </div>
-        <div class="content">
-            <h4 class="text-center">Viewer</h4>
-            <div v-if="selectedPackageIndex !== null">
-                <h4 class="text-center">Package {{ selectedPackageIndex + 1 }}</h4>
-                <p>Content for package {{ selectedPackageIndex + 1 }}</p>
-            </div>
-            <div v-else>
-                <p class="text-center">Select a package to view its content.</p>
+        <NavBar />
+        <div class="container-fluid">
+            <div class="row row-cols-auto main">
+                <SideBar />
+                <Content />
             </div>
         </div>
+
     </div>
 
 </template>
@@ -25,28 +15,25 @@
 <script>
 import Content from '@/components/Content.vue';
 import SideBar from '@/components/SideBar.vue';
+import Stream from '@/components/Stream.vue';
+import NavBar from '@/components/NavBar.vue';
+
 export default {
     components: {
         Content,
         SideBar,
+        Stream,
+        NavBar,
     },
 }
 </script>
 
 <style>
-.sidebar {
-    height: 100%;
-    width: 250px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: #f8f9fa;
-    padding-top: 20px;
+#app {
+    font-family: "Space Grotesk", sans-serif;
 }
 
-/* стили для контента */
-.content {
-    margin-left: 250px;
-    padding: 20px;
+.main {
+    padding-top: 30px;
 }
 </style>
