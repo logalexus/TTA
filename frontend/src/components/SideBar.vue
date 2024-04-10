@@ -1,7 +1,15 @@
 <template>
-    <div class="col-sm-3 d-none d-sm-block sidebar">
+    <div class="col-md-auto sidebar">
         <div class="sidebar-sticky">
             <ul class="list">
+                <Stream />
+                <Stream />
+                <Stream />
+                <Stream />
+                <Stream />
+                <Stream />
+                <Stream />
+                <Stream />
                 <Stream />
                 <Stream />
                 <Stream />
@@ -32,11 +40,10 @@ export default {
 <style scoped>
 .sidebar {
     height: 100%;
-    width: 250px;
     top: 0;
     left: 0;
     bottom: 0;
-    background-color: #e7e7e7;
+    /* background-color: #e7e7e7; */
     padding: 0;
 }
 

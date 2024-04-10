@@ -2,9 +2,9 @@
     <div id="app">
         <NavBar />
         <div class="container-fluid">
-            <div class="row row-cols-auto main">
-                <SideBar />
-                <Content />
+            <div class="row main">
+                <SideBar/>
+                <Content/>
             </div>
         </div>
 
@@ -31,6 +31,11 @@ export default {
 <style>
 #app {
     font-family: "Space Grotesk", sans-serif;
+    background-color: #e9ebf7;
+}
+
+.body {
+    
 }
 
 .main {

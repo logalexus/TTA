@@ -1,5 +1,5 @@
 <template>
-    <div class="col-sm-9 ml-sm-auto px-4 content">
+    <div class="col-md-auto content">
         <Packet v-for="packet in packets"
 				:key="packet.id"
 				:packet="packet"/>
