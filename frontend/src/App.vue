@@ -1,13 +1,10 @@
 <template>
     <div id="app">
         <NavBar />
-        <div class="container-fluid">
-            <div class="row main">
-                <SideBar/>
-                <Content/>
-            </div>
+        <div class="row">
+            <SideBar />
+            <Content />
         </div>
-
     </div>
 
 </template>
@@ -34,11 +31,8 @@ export default {
     background-color: #e9ebf7;
 }
 
-.body {
-    
-}
-
-.main {
-    padding-top: 30px;
+.row {
+    display: flex;
+    flex-flow: row nowrap;
 }
 </style>

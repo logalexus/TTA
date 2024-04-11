@@ -1,5 +1,5 @@
 <template>
-    <div :class="{'packet-incoming': packet.incoming, 'packet-outgoing': !packet.incoming}">
+    <div class="packet" :class="{'packet-incoming': packet.incoming, 'packet-outgoing': !packet.incoming}">
         <div>
             #{{ packet.id }} Packet at 10.09.2024
         </div>
@@ -24,19 +24,20 @@ export default {
 <style scoped>
 .packet-outgoing {
     background: rgb(231, 248, 253);
-    box-shadow: 0 0 5px 5px rgb(231, 248, 253);
 }
 
 .packet-incoming {
     background: rgb(254, 234, 231);
-    box-shadow: 0 0 5px 5px rgb(254, 234, 231);
 }
 
+.packet {
+    border-radius: 4px;
+    padding: 10px;
+    margin: 5px;
+}
 p {
     font-family: "Ubuntu Mono", "Lucida Console", monospace;
     font-size: 100%;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
     word-break: break-word;
 }
 </style>

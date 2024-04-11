@@ -1,5 +1,5 @@
 <template>
-    <div class="col-md-auto sidebar">
+    <div class="sidebar">
         <div class="sidebar-sticky">
             <ul class="list">
                 <Stream />
@@ -40,17 +40,12 @@ export default {
 <style scoped>
 .sidebar {
     height: 100%;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    /* background-color: #e7e7e7; */
-    padding: 0;
+    width: 500px;
 }
 
 .sidebar-sticky {
     position: relative;
-    top: 0;
-    height: calc(100vh - 30px);
+    height: calc(100vh - 115px);
     overflow-x: hidden;
     overflow-y: auto;
 }

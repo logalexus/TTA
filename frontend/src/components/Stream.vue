@@ -27,7 +27,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .stream-item {
     background-color: #ffffff;
     border-radius: 4px;
