@@ -7,13 +7,19 @@
         <span class="descriprion">TCP Traffic analyzer</span>
     </div>
     <div class="navbar-control">
-        <img src="../assets/run.svg" alt="run">
+        <button class="toggle-button" @click="toggleWs">
+            <img src="../assets/run.svg" alt="run">
+        </button>
     </div>
 </template>
 
 <script>
 export default {
-
+    methods: {
+        toggleWs() {
+            this.$emit("toggleWs");
+        }
+    },
 }
 </script>
 
@@ -37,6 +43,11 @@ export default {
     padding: 5px;
 }
 
+.toggle-button {
+    border: none;
+    background-color: transparent;
+}
+
 .text-logo {
     font-size: 30px;
     font-weight: 700;
@@ -48,5 +59,4 @@ export default {
     font-weight: 500;
     color: #406be1a2;
 }
-
 </style>
