@@ -7,9 +7,11 @@ import "@/assets/global.css"
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 
+
+
 const axiosInstance = axios.create({
     // baseURL: '/api',
-    baseURL: 'http://192.168.0.19:8000/api',
+    baseURL: 'http://192.168.0.102:8000/api',
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',

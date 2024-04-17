@@ -1,8 +1,13 @@
+import json
 from queue import Queue
+import signal
+import sys
 from fastapi import APIRouter, FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from backend.packets.stream import Stream
 from backend.packets.sniffer import Sniffer
+import asyncio
 
 app = FastAPI()
 app.add_middleware(
@@ -22,14 +27,20 @@ sniffer.run()
 async def streams_websocket(websocket: WebSocket):
     await websocket.accept()
     while True:
-        stream: Stream = sniffer.output_streams.get()
-        await websocket.send_text(stream.to_json())
+        stream: Stream = await sniffer.output_streams.get()
+        stream_json= {
+            "type" : "NEW_STREAM",
+            "data" : stream.to_json()
+        }
+        # await asyncio.sleep(1)
+        await websocket.send_text(json.dumps(stream_json))
         sniffer.output_streams.task_done()
+
 
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"Hello": "Worl"}
 
 
 app.include_router(router)

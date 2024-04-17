@@ -3,7 +3,7 @@ from typing import Dict
 from pyshark.tshark.tshark import get_tshark_interfaces
 from backend.packets.flow import Flow
 from backend.packets.stream import Stream
-from queue import Queue
+from asyncio import Queue
 
 import pyshark
 

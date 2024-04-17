@@ -1,1 +1,4 @@
-export const api = "http://your-api-url.com";
+const config = {
+    apiWs: `ws://${window.location.hostname}:8000/api/ws`
+};
+export default config;

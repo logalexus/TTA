@@ -14,7 +14,7 @@ import Content from '@/components/Content.vue';
 import Sidebar from '@/components/Sidebar.vue';
 import Stream from '@/components/Stream.vue';
 import Navbar from '@/components/Navbar.vue';
-import SockJS from 'sockjs-client';
+import config from '@/config.js';
 
 export default {
     components: {
@@ -33,7 +33,7 @@ export default {
     methods: {
         connectWs() {
             if (this.websocket !== null) return;
-            this.websocket = new SockJS(this.$http.defaults.baseURL + '/ws');
+            this.websocket = new WebSocket(config.apiWs);
             this.websocket.onopen = () => {
                 this.isLive=true;
                 console.info('[WS] Connected');
@@ -55,7 +55,7 @@ export default {
 
                 switch (parsed.type) {
                     case 'NEW_STREAM': {
-                        this.$refs.sidebar.addStreamFromWs(parsed.value);
+                        console.log(parsed.data)
                         break;
                     }
                     default: {

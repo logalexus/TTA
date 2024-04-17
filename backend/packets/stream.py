@@ -26,4 +26,4 @@ class Stream():
                 raw_data = bytes.fromhex(raw_data.replace(":", ""))
                 raw_data = raw_data.decode(errors="ignore")
                 data["packets"].append(raw_data)
-                return json.dumps(data)
+        return json.dumps(data)
