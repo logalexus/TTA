@@ -1,41 +1,36 @@
-import json
-from queue import Queue
-import signal
-import sys
-from fastapi import APIRouter, FastAPI, WebSocket
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from backend.packets.stream import Stream
-from backend.packets.sniffer import Sniffer
+from asyncio import Queue
 import asyncio
+import json
+from contextlib import asynccontextmanager
+from typing import List
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from backend.packets.sniffer import Sniffer
 
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
-)
-router = APIRouter(prefix="/api")
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    loop = asyncio.get_event_loop()
+    loop.create_task(sniffer.run())
+    loop.create_task(distribute_streams(
+        sniffer.output_stream, active_websockets))
+    yield
+
+app = FastAPI(lifespan=lifespan)
+active_websockets: List[WebSocket] = []
 sniffer = Sniffer("enp0s3", 5000)
-sniffer.run()
 
 
 @app.websocket("/api/ws")
 async def streams_websocket(websocket: WebSocket):
     await websocket.accept()
-    while True:
-        stream: Stream = await sniffer.output_streams.get()
-        stream_json= {
-            "type" : "NEW_STREAM",
-            "data" : stream.to_json()
-        }
-        # await asyncio.sleep(1)
-        await websocket.send_text(json.dumps(stream_json))
-        sniffer.output_streams.task_done()
-
+    active_websockets.append(websocket)
+    try:
+        while True:
+            data = await websocket.receive_json()
+            print(data)
+    except WebSocketDisconnect:
+        active_websockets.remove(websocket)
 
 
 @app.get("/")
@@ -43,4 +38,13 @@ def read_root():
     return {"Hello": "Worl"}
 
 
-app.include_router(router)
+async def distribute_streams(stream_queue: Queue, clients: List[WebSocket]):
+    while True:
+        stream: Queue = await stream_queue.get()
+        stream_json = {
+            "type": "NEW_STREAM",
+            "data": stream.to_json()
+        }
+        for client in clients:
+            await client.send_text(json.dumps(stream_json))
+        stream_queue.task_done()

@@ -35,18 +35,19 @@ export default {
             if (this.websocket !== null) return;
             this.websocket = new WebSocket(config.apiWs);
             this.websocket.onopen = () => {
-                this.isLive=true;
+                this.isLive = true;
                 console.info('[WS] Connected');
             };
             this.websocket.onclose = (ev) => {
                 console.info('[WS] Disconnected', ev.code, ev.reason);
+                this.isLive = false;
                 this.websocket = null;
                 if (ev.code === 1008) {
                     console.info('[WS] Security timeout, reconnecting...');
-                    // this.connectWs();
+                    this.connectWs();
                 }
                 if (ev.code !== 1000) {
-                    // setTimeout(this.connectWs, 3000);
+                    setTimeout(this.connectWs, 3000);
                     console.info('[WS] Reconnecting...');
                 }
             };
@@ -65,12 +66,12 @@ export default {
                 }
             };
             this.websocket.onerror = (ev) => {
-                console.warn('[WS] Error', ev);
+                console.warn('[WS] Error', ev); ``
             };
 
         },
         disconnectWs() {
-            this.websocket.close();
+            this.websocket?.close();
             this.websocket = null;
             this.isLive = false;
             console.info('[WS] Closed');
