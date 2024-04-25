@@ -2,7 +2,7 @@
     <div id="app">
         <Navbar @toggleWs="toggleWs" />
         <div class="row">
-            <Sidebar />
+            <Sidebar ref="sidebar"/>
             <Content />
         </div>
     </div>
@@ -56,7 +56,7 @@ export default {
 
                 switch (parsed.type) {
                     case 'NEW_STREAM': {
-                        console.log(parsed.data)
+                        this.$refs.sidebar.addStream(parsed.data)
                         break;
                     }
                     default: {

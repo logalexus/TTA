@@ -2,18 +2,9 @@
     <div class="sidebar">
         <div class="sidebar-sticky">
             <ul class="list">
-                <Stream />
-                <Stream />
-                <Stream />
-                <Stream />
-                <Stream />
-                <Stream />
-                <Stream />
-                <Stream />
-                <Stream />
-                <Stream />
-                <Stream />
-                <Stream />
+                <transition-group name="list" tag="p">
+                    <Stream v-for="stream in streams" :key="stream.id" :stream="stream" />
+                </transition-group>
             </ul>
         </div>
     </div>
@@ -25,12 +16,13 @@ export default {
     name: 'Sidebar',
     data: function () {
         return {
-            streams: [
-                {
-                    id: 111,
-                    time: 1556411080,
-                },
-            ],
+            streams: [],
+        }
+    },
+    methods: {
+        addStream(stream) {
+            this.streams.unshift(stream);
+            console.log(stream);
         }
     },
     components: { Stream, },
@@ -53,5 +45,21 @@ export default {
 .list {
     list-style-type: none;
     padding: 0;
+}
+
+.list-item {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.list-enter-active,
+.list-leave-active {
+    transition: 0.8s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+    opacity: 0;
+    transform: translateX(100px);
 }
 </style>

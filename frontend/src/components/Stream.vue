@@ -1,33 +1,63 @@
 <template>
-    <li class="stream-item">
-        <span class="label protocol">HTTP</span>
-        <div class="stream-info">
-            <span class="label status-label">200</span>
-            <div class="info">
-                <div class="ip-addresses">
-                    <span class="ip">172.17.0.1:33996</span>
-                    <span class="arrow">➔</span>
-                    <span class="ip">172.17.0.1880</span>
+    <li>
+        <router-link class="stream-item nav-link" :to="{ name: 'home' }">
+            <span class="label protocol">{{ stream.protocol }}</span>
+            <div class="stream-info">
+                <span class="label status-label">#{{ stream.id }}</span>
+                <div class="info">
+                    <div class="ip-addresses">
+                        <span class="ip">{{ stream.ipsrc }}:{{ stream.portsrc }}</span>
+                        <span class="arrow">➔</span>
+                        <span class="ip">{{ stream.ipdst }}:{{ stream.portdst }}</span>
+                    </div>
+                    <div class="suspicious-info">
+                        <div class="ip">Suspicious:</div>
+                        <span class="label suspicious">XSS</span>
+                        <span class="label suspicious">SQL Injection</span>
+                    </div>
+                    <div class="timestamp">{{ dateToText(stream.start_timestamp) }}</div>
                 </div>
-                <div class="suspicious-info">
-                    <div class="ip">Suspicious:</div>
-                    <span class="label suspicious">XSS</span>
-                    <span class="label suspicious">SQL Injection</span>
-                </div>
-                <div class="timestamp">01/05/2023, 4:58:13:207 AM</div>
             </div>
-        </div>
+        </router-link>
     </li>
 </template>
 
 <script>
 export default {
     name: "Stream",
-    props: ["id", "time"],
+    props: {
+        stream: {
+            id: Number(),
+            protocol: String(),
+            start_timestamp: Number(),
+            end_timestamp: Number(),
+            ipsrc: String(),
+            ipdst: String(),
+            portsrc: Number(),
+            portdst: Number(),
+            status: Number()
+        }
+    },
+    methods: {
+        dateToText(unixTimestamp) {
+            const date = new Date(unixTimestamp * 1000);
+            const options = {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            };
+            return date.toLocaleString('ru-RU');
+        },
+
+    },
 }
 </script>
 
 <style scoped>
+.nav-link {
+    color: #333;
+}
+
 .stream-item {
     background-color: #ffffff;
     border-radius: 4px;
@@ -66,7 +96,7 @@ export default {
 }
 
 .status-label {
-    background-color: #4CAF50;
+    background-color: #444444;
     padding: 0px 4px 0px 4px;
     border-radius: 4px;
 }

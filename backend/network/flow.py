@@ -10,7 +10,7 @@ class Flow():
         result = self.ipsrc.__hash__() * self.ipdst.__hash__()
         result = result * PRIME + (self.portsrc * self.portdst)
         return result
-    
+
     def __eq__(self, other):
         ipeq1 = self.ipsrc == other.ipsrc and self.ipdst == other.ipdst
         ipeq2 = self.ipsrc == other.ipdst and self.ipdst == other.ipsrc
