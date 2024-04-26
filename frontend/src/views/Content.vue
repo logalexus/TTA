@@ -19,6 +19,9 @@ export default {
             packets: [],
         };
     },
+    mounted() {
+        this.loadPackets(this.stream_id);
+    },
     watch: {
         '$route.params.stream_id': function () {
             this.packets = [];

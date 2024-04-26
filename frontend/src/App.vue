@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <Navbar @toggleWs="toggleWs" />
+        <Navbar @toggleWs="toggleWs" :isLive="isLive" />
         <div class="row">
             <Sidebar ref="sidebar" />
             <transition name="fade" mode="out-in">
@@ -31,7 +31,8 @@ export default {
         };
     },
     mounted() {
-        this.loadStreams()
+        this.loadStreams();
+        this.connectWs();
     },
     methods: {
         connectWs() {

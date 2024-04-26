@@ -23,7 +23,7 @@ async def lifespan(app: FastAPI):
 create_db()
 app = FastAPI(lifespan=lifespan)
 active_websockets: List[WebSocket] = []
-sniffer = Sniffer("wg0", 5000)
+sniffer = Sniffer("enp0s3", 5000)
 
 app.add_middleware(
     CORSMiddleware,

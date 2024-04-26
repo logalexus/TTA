@@ -1,20 +1,21 @@
 <template>
-    <!-- <nav class="navbar navbar-dark fixed-top navbar-expand bg-dark  shadow">
-        <a class="navbar-brand">VVS</a>
-    </nav> -->
     <div class="navbar-main">
         <span class="text-logo">VVS</span>
         <span class="descriprion">TCP Traffic analyzer</span>
     </div>
     <div class="navbar-control">
         <button class="toggle-button" @click="toggleWs">
-            <img src="../assets/run.svg" alt="run">
+            <img v-if="isLive" src="../assets/pause.svg" alt="run">
+            <img v-else src="../assets/run.svg" alt="run">
         </button>
     </div>
 </template>
 
 <script>
 export default {
+    props: {
+        isLive: Boolean(),
+    },
     methods: {
         toggleWs() {
             this.$emit("toggleWs");

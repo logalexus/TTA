@@ -31,7 +31,7 @@ const router = createRouter({
 
 const axiosInstance = axios.create({
   // baseURL: '/api',
-  baseURL: 'http://10.8.0.8:8000/api',
+  baseURL: `http://${window.location.hostname}:8000/api`,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
