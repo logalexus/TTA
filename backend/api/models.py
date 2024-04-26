@@ -1,7 +1,5 @@
 from typing import Dict
-from sqlalchemy import Column
-from sqlalchemy import String
-from sqlalchemy import Integer
+from sqlalchemy import Column, String, Integer, Boolean
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
 from backend.api.database import Base
@@ -16,6 +14,7 @@ class Packet(Base):
     portsrc = Column(Integer)
     portdst = Column(Integer)
     timestamp = Column(Integer)
+    incoming = Column(Boolean)
     payload = Column(String, nullable=True)
     protocol = Column(String, default="TCP")
     stream_id = Column(Integer, ForeignKey('stream.id'))

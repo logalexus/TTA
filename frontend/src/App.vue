@@ -2,15 +2,16 @@
     <div id="app">
         <Navbar @toggleWs="toggleWs" />
         <div class="row">
-            <Sidebar ref="sidebar"/>
-            <Content />
+            <Sidebar ref="sidebar" />
+            <transition name="fade" mode="out-in">
+                <router-view name="content" />
+            </transition>
         </div>
     </div>
 
 </template>
 
 <script>
-import Content from '@/components/Content.vue';
 import Sidebar from '@/components/Sidebar.vue';
 import Stream from '@/components/Stream.vue';
 import Navbar from '@/components/Navbar.vue';
@@ -18,7 +19,6 @@ import config from '@/config.js';
 
 export default {
     components: {
-        Content,
         Sidebar,
         Stream,
         Navbar,
@@ -29,6 +29,9 @@ export default {
             websocket: null,
             db: null,
         };
+    },
+    mounted() {
+        this.loadStreams()
     },
     methods: {
         connectWs() {
@@ -42,14 +45,6 @@ export default {
                 console.info('[WS] Disconnected', ev.code, ev.reason);
                 this.isLive = false;
                 this.websocket = null;
-                if (ev.code === 1008) {
-                    console.info('[WS] Security timeout, reconnecting...');
-                    this.connectWs();
-                }
-                if (ev.code !== 1000) {
-                    setTimeout(this.connectWs, 3000);
-                    console.info('[WS] Reconnecting...');
-                }
             };
             this.websocket.onmessage = (ev) => {
                 const parsed = JSON.parse(ev.data);
@@ -66,7 +61,9 @@ export default {
                 }
             };
             this.websocket.onerror = (ev) => {
-                console.warn('[WS] Error', ev); ``
+                console.warn('[WS] Error', ev);
+                setTimeout(this.connectWs, 3000);
+                console.info('[WS] Reconnecting...');
             };
 
         },
@@ -84,7 +81,18 @@ export default {
                 this.disconnectWs();
             }
 
-        }
+        },
+        loadStreams() {
+            this.$http.get(`streams`
+            ).then(response => {
+                console.log(response.data);
+                Object.values(response.data).forEach(value => {
+                    this.$refs.sidebar.addStream(value)
+                });
+            }).catch(e => {
+                console.error('Failed to load portion of streams:', e);
+            });
+        },
     }
 
 }

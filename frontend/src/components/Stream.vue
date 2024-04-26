@@ -1,6 +1,6 @@
 <template>
     <li>
-        <router-link class="stream-item nav-link" :to="{ name: 'home' }">
+        <router-link class="stream-item nav-link" :to="{name: 'stream', params: {stream_id: this.stream.id}, query: this.$route.query}">
             <span class="label protocol">{{ stream.protocol }}</span>
             <div class="stream-info">
                 <span class="label status-label">#{{ stream.id }}</span>
@@ -56,6 +56,7 @@ export default {
 <style scoped>
 .nav-link {
     color: #333;
+    text-decoration: none;
 }
 
 .stream-item {

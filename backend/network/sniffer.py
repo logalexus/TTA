@@ -6,6 +6,7 @@ from backend.network.flow import Flow
 from backend.network.dirty_stream import DirtyStream
 from asyncio import Queue
 
+import netifaces
 import backend.api.repository as repository
 
 
@@ -17,6 +18,15 @@ class Sniffer():
         self.output_stream = Queue()
         self.packet_counter = 0
         self.stream_counter = 0
+        self.local_ip = self.get_ip_address(self.interface)
+
+    def get_ip_address(self, interface):
+        try:
+            addresses = netifaces.ifaddresses(interface)
+            ip = addresses[netifaces.AF_INET][0]['addr']
+            return ip
+        except (KeyError, ValueError):
+            return None
 
     async def assembly_streams(self, pkt: Packet, raw_packet: any,  target_port: int):
         flow = Flow(pkt.ipsrc, pkt.ipdst, int(pkt.portsrc), int(pkt.portdst))
@@ -42,6 +52,8 @@ class Sniffer():
             portdst=int(raw_packet.tcp.dstport),
             timestamp=int(float(raw_packet.sniff_timestamp)),
         )
+        
+        packet.incoming = self.local_ip == packet.ipdst
 
         if "tcp.payload" in raw_packet.tcp._all_fields:
             if hasattr(raw_packet, "http"):
@@ -67,11 +79,11 @@ class Sniffer():
             stream = repository.add_stream(db, stream)
 
             for packet in dirty_stream.packets:
-                if packet.protocol == "HTTP":
-                    stream.protocol = "HTTP"
-                    db.commit(stream)
-                packet.stream_id = stream.id
-                repository.add_packet(db, packet)
+                if packet.payload:
+                    if packet.protocol == "HTTP":
+                        stream.protocol = "HTTP"
+                    packet.stream_id = stream.id
+                    repository.add_packet(db, packet)
 
         return stream
 

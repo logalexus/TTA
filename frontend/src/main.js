@@ -3,29 +3,40 @@ import App from "./App";
 import axios from 'axios';
 import VueAxios from 'vue-axios'
 import { createRouter, createWebHistory } from 'vue-router'
+import Content from '@/views/Content.vue';
 
 import "@/assets/global.css"
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 
 const router = createRouter({
-    routes: [{
-      path: '/',
-      name: 'home',
-      component: App
-    }],
-    history: createWebHistory()
-  })
+  routes: [{
+    path: '/',
+    name: 'home',
+    component: App
+  },
+  {
+    path: '/:stream_id?',
+    name: 'stream',
+    props: true,
+    components: {
+      content: Content,
+    },
+  },
+  ],
+  linkActiveClass: 'active',
+  history: createWebHistory()
+})
 
 
 const axiosInstance = axios.create({
-    // baseURL: '/api',
-    baseURL: 'http://10.8.0.8:8000/api',
-    headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-    },
-    timeout: 5000,
+  // baseURL: '/api',
+  baseURL: 'http://10.8.0.8:8000/api',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  },
+  timeout: 5000,
 });
 
 const app = createApp(App);

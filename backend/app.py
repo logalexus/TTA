@@ -1,5 +1,6 @@
 import asyncio
 import json
+import backend.api.repository as repository
 
 from typing import List
 from asyncio import Queue
@@ -8,6 +9,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from backend.network.sniffer import Sniffer
 from backend.api.models import Stream
 from backend.api.database import SessionLocal, create_db
+from fastapi.middleware.cors import CORSMiddleware
 
 
 @asynccontextmanager
@@ -21,7 +23,15 @@ async def lifespan(app: FastAPI):
 create_db()
 app = FastAPI(lifespan=lifespan)
 active_websockets: List[WebSocket] = []
-sniffer = Sniffer("any", 5000)
+sniffer = Sniffer("wg0", 5000)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.websocket("/api/ws")
@@ -40,10 +50,21 @@ def read_root():
     return {"Hello": "World"}
 
 
+@app.get("/api/packets")
+async def get_packets(stream_id: int):
+    with SessionLocal() as db:
+        return repository.get_packets(db, stream_id)
+    
+@app.get("/api/streams")
+async def get_packets():
+    with SessionLocal() as db:
+        return repository.get_streams(db)
+
+
 async def distribute_streams(stream_queue: Queue, clients: List[WebSocket]):
     while True:
-        stream: Stream = await stream_queue.get()
         with SessionLocal() as db:
+            stream: Stream = await stream_queue.get()
             db.add(stream)
             db.refresh(stream)
             stream_json = {
