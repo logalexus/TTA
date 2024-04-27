@@ -1,7 +1,7 @@
 <template>
     <div class="content">
         <div class="header">
-            <span class="protocol">HTTP Stream {{ stream_id }}</span>
+            <span class="protocol">Stream #{{ stream_id }}</span>
         </div>
         <Packet v-for="packet in packets" :key="packet.id" :packet="packet" />
     </div>

@@ -1,12 +1,14 @@
 <template>
     <div id="app">
-        <Navbar @toggleWs="toggleWs" :isLive="isLive" />
+        <Navbar @toggleWs="toggleWs" :isLive="isLive" @show-patterns="showPatternsModal = true"/>
         <div class="row">
             <Sidebar ref="sidebar" />
             <transition name="fade" mode="out-in">
                 <router-view name="content" />
             </transition>
+            
         </div>
+        <PatternsModal v-show="showPatternsModal" @close-modal="showPatternsModal = false"/>
     </div>
 
 </template>
@@ -15,6 +17,7 @@
 import Sidebar from '@/components/Sidebar.vue';
 import Stream from '@/components/Stream.vue';
 import Navbar from '@/components/Navbar.vue';
+import PatternsModal from '@/views/PatternsModal.vue'
 import config from '@/config.js';
 
 export default {
@@ -22,12 +25,14 @@ export default {
         Sidebar,
         Stream,
         Navbar,
+        PatternsModal,
     },
     data() {
         return {
             isLive: false,
             websocket: null,
             db: null,
+            showPatternsModal: true,
         };
     },
     mounted() {

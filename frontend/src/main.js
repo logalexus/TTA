@@ -7,7 +7,6 @@ import Content from '@/views/Content.vue';
 
 import "@/assets/global.css"
 import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap-vue/dist/bootstrap-vue.css';
 
 const router = createRouter({
   routes: [{

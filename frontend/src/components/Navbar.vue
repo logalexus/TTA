@@ -4,22 +4,19 @@
         <span class="descriprion">TCP Traffic analyzer</span>
     </div>
     <div class="navbar-control">
-        <button class="toggle-button" @click="toggleWs">
+        <button class="toggle-button" @click="$emit('toggleWs')">
             <img v-if="isLive" src="../assets/pause.svg" alt="run">
             <img v-else src="../assets/run.svg" alt="run">
         </button>
+        <button class="button" @click="$emit('show-patterns')">Patterns</button>
     </div>
 </template>
 
 <script>
+
 export default {
     props: {
         isLive: Boolean(),
-    },
-    methods: {
-        toggleWs() {
-            this.$emit("toggleWs");
-        }
     },
 }
 </script>
@@ -40,6 +37,7 @@ export default {
     display: flex;
     align-items: center;
     flex-direction: row;
+    justify-content: space-between;
     background-color: #f7f9fc;
     padding: 5px;
 }
@@ -59,5 +57,13 @@ export default {
     font-size: 15px;
     font-weight: 500;
     color: #406be1a2;
+}
+
+.button {
+    border-color: transparent;
+    border-radius: 4px;
+    background-color: #406ce1;
+    color: white;
+    font-weight: 500;
 }
 </style>
