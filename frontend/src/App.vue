@@ -1,14 +1,14 @@
 <template>
     <div id="app">
-        <Navbar @toggleWs="toggleWs" :isLive="isLive" @show-patterns="showPatternsModal = true"/>
+        <Navbar @toggleWs="toggleWs" :isLive="isLive" @show-patterns="showPatternsModal = true" />
         <div class="row">
             <Sidebar ref="sidebar" />
             <transition name="fade" mode="out-in">
                 <router-view name="content" />
             </transition>
-            
+
         </div>
-        <PatternsModal v-show="showPatternsModal" @close-modal="showPatternsModal = false"/>
+        <PatternsModal v-show="showPatternsModal" @close-modal="showPatternsModal = false" />
     </div>
 
 </template>
@@ -89,15 +89,16 @@ export default {
 
         },
         loadStreams() {
-            this.$http.get(`streams`
-            ).then(response => {
-                console.log(response.data);
-                Object.values(response.data).forEach(value => {
-                    this.$refs.sidebar.addStream(value)
+            this.$http.get(`streams`)
+                .then(response => {
+                    console.log(response.data);
+                    Object.values(response.data).forEach(value => {
+                        this.$refs.sidebar.addStream(value)
+                    });
+                })
+                .catch(e => {
+                    console.error('Failed to load portion of streams:', e);
                 });
-            }).catch(e => {
-                console.error('Failed to load portion of streams:', e);
-            });
         },
     }
 

@@ -1,0 +1,57 @@
+Regular expressions detect Web attacks from Web Log
+Detect Hex/Base64 encoded string
+Hex encoding:
+((%|0?x)?[0–9A-Fa-f] [0–9A-Fa-f])+
+Base64 encoding:
+(?<=%20|^)(?(?=echo)|(?:[A-Za-z0–9+/]{4})*(?:[A-Za-z0–9+/]{2}==|[A-Za-z0–9+/]{3}=)?)(?=%20|$)
+
+SQL Injection attack detection
+Basic SQL Injection:
+1. (?ix)(?:(union.*select.*from))
+2. (?ix)(\%27|\’)(select|union|insert|update|delete|replace|truncate)
+3. (?:[\s()]case\s*\()|(?:\)\s*like\s*\()|(?:having\s*[^\s]+\s*[^\w\s])|(?:if\s?\([\d\w]\s*[=~])
+4. (\’|\%27)(\s|\%20|\+)(\%4F|O|o|\%6F)(\%52|R|r|\%72)(\s|\%20|\+)(\d+)(\=|\%3D)\6
+5. (\’|\%27)(\s|\%20|\+)(\%4F|O|o|\%6F)(\%52|R|r|\%72)(\s|\%20|\+)(\’|\%27)(\w+)(\’|\%27) (\=|\%3D)(\’|\%27)\7(\-|\%2D){2}
+Blind SQLi
+1. (?:(sleep\((\s*)(\d*)(\s*)\)|benchmark\((.*)\,(.*)\)))
+2. (\s|\%20|\+)([Aa][Nn][Dd])(\s|\%20|\+)(\d+)\=\4
+3. (\s|\%20|\+)([Aa][Nn][Dd])(\s|\%20|\+)\’(\w+)\’\=\’\4
+
+Cross Site Scripting (XSS)
+1. (?ix)(\%3C|<)(\%2F|\/)*[a-z0–9\%]+(\%3E|>)
+2. (?i)(\%3C|<)(\%69|i|\%49)(\%6D|m|\%4D)(\%67|g|\%47)[^\n]+(\%3E|>)
+3. (?i)(?:(post|get|head|put|option)\s+.+?=.+(script|self|alert|javascript\: |xss).+?)
+4. (?i) javascript |vbscript|expression|applet|script|embed|object|iframe |frameframeset)
+
+Directory/Path Traversal
+a)Directory Traversal
+(?:(?:\/|\\)?\.+(\/|\\)(?:\.+)?)|(?:\w\.exe\??\s)|(?:;\s*\w+\s*\/[\w*-]+\/)| (?:\d\.\dx\|)| (?:%(?:c0\.|af\.|5c\.))|(?:\/(?:%2e){2})
+b) Specific Directory và Path Traversal
+(?:%c0%ae\/)|(?:(?:\/|\\)(home|conf|usr|etc|proc|opt|s?bin|local|dev|tmp|kern|[br]oot|system| sys|windows|winnt|program|%[a-z_-]{3,}%)(?:\/|\\))|(?:(?:\/|\\)inetpub|localstart\.aspx?|boot\.ini)
+
+Cross-Site Request Forgery (CSRF)
+(?:[+\/]\sname[\W\d][)+])|(?:;\Wurl\s=)|(?:[^\w\s\/?:>]\s*(?:location|referrer|name)\s* [^\/\w\s-])
+
+Local File Inclusion (LFI)
+(?<=GET\s+)(/([0–9a-z_%&#xu]|\-|\.)*)+\?\w+\=(?!((https?|php|zip|data):/))((../|/|..\\|\\)+ [0–9A-Za-z_|\=|\%|\.|\-|\&|\#]+)+(?=\s)
+
+Remote File Execution (RFI)
+(?<=GET\s+)(/([0–9a-z_%&#xu]|\-|\.)*)+\?\w+\=((https?|php|zip|data):/)((/|\\) [0–9A-Za-z_|\=|\%|\.|\-|\&|\#]+)+(?=\s)
+
+DoS attack
+a) DoS attack through XSS
+(?:(^|\W)const\s+[\w\-]+\s*=)|(?:(?:do|for|while)\s*\([^;]+;+\))|(?:(?:^|\W)on\w+\s*= [\w\W](?:on\w+|alert|eval|print|confirm|prompt))|(?:groups=\d+\(\w+\))|(?:(.)\1{128,})
+b) DoS attack through MySQL Charset Switch and MSSQL
+(?:alter\s\w+.character\s+set\s+\w+)|(“;\swaitfor\s+time\s+”)|(?:”;.:\sgoto)
+
+Command Injection
+(<?%?)(.([+\s]|\%20|\W)(eval|(shell_)?exec(file|lp|vp)?|(_w)?system| shell(execute(forexplore)?)?|input)([+\s]|\%20)(\(|\%28)[^\)](;|\))) r1402: (?<=([;&]|[+\s]|\%20|\=))(echo|ls| cat|type|mv|cp|copy|(mk|rm)?dir|md|r(m|d)|i(f|p) config|uname|ver|pf|tasklist|net|netstat|whoami|nslookup)([+\s]|\%20) (([+\s]|\%20)(\-\w+)) (([+\s]|\%20)|[<>]|[/\-]|\.|\w)+.*(?=\s+HTTP)
+
+Code Injection
+a) Code Injection
+(?:@[\w-]+\s*\()|(?:]\s*\(\s*[“!]\s*\w)|(?:<?%?.(?:[?%]>)?)|(?:;[\s\w|]\$ \w+\s*=)|(?:\$\w+\s*=(?:(?:\s*\$?\w+\s*[(;])|\s*”.”))|(?:;\s\{\W*\w+\s*\() r11.2: (?:(?:[;]+|(<?%?)).(?:define|eval|file_get_contents|include| require_once| require|set|shell_exec|phpinfo|system|passthru|preg_\w+|execute)\s[“(@]) r11.3: (?:(?:[;]+|(<?%?)).^\w)|(?:;\s rm\s+-\w+\s+)|(?:;.{.\$\w+\s*=)|(?:\$\w+\s*\[\]\s*=\s*)
+b) Code Injection combines Base64
+(?<=%20|^)(?(?=echo)|(?:[A-Za-z0–9+/]{4})(?:[A-Za-z0–9+/]{2}==|[A-Za-z0–9+/]{3} =)?)(?=%20|$).+(?=\s+HTTP) r11.5: (?<=%20|^)(?(?=echo)|(?:[A-Za-z0–9+/]{4})(?:[A-Za-z0–9+/]{2}==|[A-Za-z0–9+/]{3} =)?)(?=%20|$).+(?=\s+HTTP) r11.6: (?i)(?:=|\s+)(base64_decode\(‘(‘?\”?[A-Za-z0–9+/=]+’?\”?))
+
+Web-Shells (Defacement)
+(?<=\W)(((ak37|b37|b374k|c37|c99|c100|r57|ru24|(aspx?|cmd|jsp|iron|lama|my|php|web| xss)(shell|spy)|b(ack)?door|fuck|inject|nt(boot|daddy)|shell|simple)[0–9a-z_-]*)|(aja?n|asd|aspx?| cmd|code|db|deploy|fbi|fso|ice|iron|jsp|lama|list|php\d?|pws|sql|ssh|telnet|test|tool|up|usr|web|wso| xss|zaco|zippo|0rb|orb))(\.(aspx?|dll|((?=cmd\.)(|exe))|jsp|php\d?|py|txt))+(?=\W)

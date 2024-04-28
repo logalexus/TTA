@@ -2,11 +2,13 @@ import { createApp } from "vue";
 import App from "./App";
 import axios from 'axios';
 import VueAxios from 'vue-axios'
+import ToastPlugin from 'vue-toast-notification';
 import { createRouter, createWebHistory } from 'vue-router'
 import Content from '@/views/Content.vue';
 
 import "@/assets/global.css"
 import 'bootstrap/dist/css/bootstrap.css';
+import 'vue-toast-notification/dist/theme-bootstrap.css';
 
 const router = createRouter({
   routes: [{
@@ -40,6 +42,7 @@ const axiosInstance = axios.create({
 
 const app = createApp(App);
 app.use(VueAxios, axiosInstance);
+app.use(ToastPlugin);
 app.use(router)
 app.mount('#app');
 

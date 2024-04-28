@@ -1,12 +1,15 @@
 <template>
     <li class="pattern">
         <div class="info-element">
-            <div>{{ pattern.patternName }}</div>
-            <div class="color-view"></div>
+            <div class="text">{{ pattern.name }}</div>
+            <div class="color-view" :style="{ 'background-color': pattern.color }"></div>
         </div>
-        <div>{{ pattern.patternRegex }}</div>
-        <button v-if="enabled" class="button button-activated" @click="enabled = false">Disable</button>
-        <button v-else class="button button-diactivated" @click="enabled = true">Enable</button>
+        <div class="text">{{ pattern.regex }}</div>
+        <div class="control">
+            <button v-if="enabled" class="button button-activated" @click="enabled = false">Disable</button>
+            <button v-else class="button button-diactivated" @click="enabled = true">Enable</button>
+            <button class="button remove-button" @click="$emit('remove-pattern', pattern)">Remove</button>
+        </div>
     </li>
 </template>
 
@@ -14,9 +17,9 @@
 export default {
     props: {
         pattern: {
-            patternName: String(),
-            patternRegex: String(),
-            patternColor: String(),
+            name: String(),
+            regex: String(),
+            color: String(),
         },
     },
     data() {
@@ -33,7 +36,8 @@ export default {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    height: 40px;
+    height: auto;
+    min-height: 40px;
     border: 1px solid rgb(200, 200, 200);
     border-radius: 5px;
     margin: 2px;
@@ -55,6 +59,12 @@ export default {
     border-radius: 10px;
 }
 
+.control {
+    display: flex;
+    flex-direction: row;
+    gap: 2px;
+}
+
 .button {
     border-color: transparent;
     border-radius: 4px;
@@ -69,5 +79,14 @@ export default {
 
 .button-diactivated {
     background-color: #3aba3a;
+}
+
+.remove-button {
+    background-color: #e14040;
+}
+
+.text {
+    max-width: 300px;
+    overflow-wrap: break-word;
 }
 </style>

@@ -20,6 +20,7 @@ class Packet(Base):
     stream_id = Column(Integer, ForeignKey('stream.id'))
 
     stream = relationship("Stream", back_populates="packet")
+    pattern_match = relationship("PatternMatch", back_populates="packet")
 
 
 class Stream(Base):
@@ -35,7 +36,7 @@ class Stream(Base):
     protocol = Column(String, default="TCP")
 
     packet = relationship("Packet", back_populates="stream")
-    
+
     @property
     def to_dict(self) -> Dict[str, any]:
         stream_info = {}
@@ -48,3 +49,28 @@ class Stream(Base):
         stream_info["end_timestamp"] = self.end_timestamp
         stream_info["protocol"] = self.protocol
         return stream_info
+
+
+class PatternMatch(Base):
+    __tablename__ = "pattern_match"
+
+    id = Column(Integer, primary_key=True, unique=True, nullable=False)
+    pattern_id = Column(Integer, ForeignKey('pattern.id'))
+    packet_id = Column(Integer, ForeignKey('packet.id'))
+    start_match = Column(Integer)
+    end_match = Column(Integer)
+    
+    pattern = relationship("Pattern", back_populates="pattern_match")
+    packet = relationship("Packet", back_populates="pattern_match")
+
+
+class Pattern(Base):
+    __tablename__ = "pattern"
+
+    id = Column(Integer, primary_key=True, unique=True, nullable=False)
+    name = Column(String)
+    regex = Column(String)
+    color = Column(String)
+    active = Column(Boolean)
+    
+    pattern_match = relationship("PatternMatch", back_populates="pattern")

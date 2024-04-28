@@ -9,7 +9,7 @@
             </div>
             <div class="patterns-list">
                 <ul class="list-group">
-                    <Pattern v-for="pattern in patterns" :pattern="pattern" />
+                    <Pattern v-for="pattern in patterns" :pattern="pattern" @remove-pattern="removePattern" />
                 </ul>
             </div>
             <div class="modal-header">
@@ -18,16 +18,15 @@
             <div class="patterns-create">
                 <div class="mb-3">
                     <label for="namePattern" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="namePattern" placeholder="SQLI" v-model="patternName">
+                    <input type="text" class="form-control" id="namePattern" placeholder="SQLI" v-model="name">
                 </div>
                 <div class="mb-3">
                     <label for="regexPattern" class="form-label">Regular expression</label>
-                    <input type="text" class="form-control" id="regexPattern" placeholder="T[1-9A-Z]+"
-                        v-model="patternRegex">
+                    <input type="text" class="form-control" id="regexPattern" placeholder="T[1-9A-Z]+" v-model="regex">
                 </div>
                 <div class="mb-3">
                     <label for="colorPattern" class="form-label">Highlight color</label>
-                    <input type="color" class="form-control" id="colorPattern" v-model="patternColor">
+                    <input type="color" class="form-control" id="colorPattern" v-model="color">
                 </div>
                 <button @click="addPattern" class="button">Add</button>
             </div>
@@ -40,23 +39,50 @@ import Pattern from "@/components/Pattern.vue"
 export default {
     data() {
         return {
-            patternName: "",
-            patternRegex: "",
-            patternColor: "#ff0000",
+            name: "",
+            regex: "",
+            color: "#ff0000",
             patterns: []
         }
     },
+    mounted() {
+        this.loadPatterns();
+    },
     methods: {
         addPattern() {
-            console.log(this.patternName);
-            console.log(this.patternRegex);
-            console.log(this.patternColor);
             const pattern = {
-                patternName: this.patternName,
-                patternRegex: this.patternRegex,
-                patternColor: this.patternColor,
+                name: this.name,
+                regex: this.regex,
+                color: this.color,
             };
-            this.patterns.push(pattern)
+
+            this.$http.post(`pattern/add`, pattern)
+                .then(response => {
+                    this.patterns.push(pattern)
+                })
+                .catch(e => {
+                    this.$toast.error(e.response.data.detail || "An error occurred")
+                });
+        },
+        removePattern(pattern) {
+            this.$http.post(`pattern/remove?name=${pattern.name}`)
+                .then(response => {
+                    this.patterns = this.patterns.filter((el) => { return el.name != pattern.name })
+                })
+                .catch(e => {
+                    this.$toast.error(e.response.data.detail || "An error occurred")
+                });
+        },
+        loadPatterns() {
+            this.$http.get(`patterns`)
+                .then(response => {
+                    Object.values(response.data).forEach(value => {
+                        this.patterns.push(value)
+                    });
+                })
+                .catch(e => {
+                    console.error('Failed to load portion of patterns:', e);
+                });
         },
     },
     components: {
@@ -86,6 +112,7 @@ export default {
 .patterns-create {
     display: flex;
     flex-direction: column;
+    align-items: ;
 }
 
 .modal-header {
@@ -98,7 +125,7 @@ export default {
     text-align: center;
     background-color: white;
     height: 700px;
-    width: 600px;
+    width: 1000px;
     margin-top: 5%;
     padding: 20px;
     border-radius: 4px;
