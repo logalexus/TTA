@@ -1,6 +1,7 @@
 <template>
     <li>
-        <router-link class="stream-item nav-link" :to="{name: 'stream', params: {stream_id: this.stream.id}, query: this.$route.query}">
+        <router-link class="stream-item nav-link"
+            :to="{ name: 'stream', params: { stream_id: this.stream.id }, query: this.$route.query }">
             <span class="label protocol">{{ stream.protocol }}</span>
             <div class="stream-info">
                 <span class="label status-label">#{{ stream.id }}</span>
@@ -10,10 +11,9 @@
                         <span class="arrow">➔</span>
                         <span class="ip">{{ stream.ipdst }}:{{ stream.portdst }}</span>
                     </div>
-                    <div class="suspicious-info">
+                    <div v-show="stream.suspicious.length > 0" class="suspicious-info">
                         <div class="ip">Suspicious:</div>
-                        <span class="label suspicious">XSS</span>
-                        <span class="label suspicious">SQL Injection</span>
+                        <Suspicious v-for="suspicious in stream.suspicious" :suspicious="suspicious"/>
                     </div>
                     <div class="timestamp">{{ dateToText(stream.start_timestamp) }}</div>
                 </div>
@@ -23,6 +23,7 @@
 </template>
 
 <script>
+import Suspicious from '@/components/Suspicious.vue';
 export default {
     name: "Stream",
     props: {
@@ -35,21 +36,19 @@ export default {
             ipdst: String(),
             portsrc: Number(),
             portdst: Number(),
-            status: Number()
+            status: Number(),
+            suspicious: Array(),
         }
     },
     methods: {
         dateToText(unixTimestamp) {
             const date = new Date(unixTimestamp * 1000);
-            const options = {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-            };
             return date.toLocaleString('ru-RU');
         },
-
     },
+    components: {
+        Suspicious,
+    }
 }
 </script>
 
@@ -64,7 +63,7 @@ export default {
     border-radius: 4px;
     box-shadow: 20px 20px 30px rgba(0, 0, 0, .05);
     margin: 5px;
-    height: 80px;
+    min-height: 80px;
     display: flex;
     gap: 5px;
 }
@@ -89,7 +88,7 @@ export default {
     font-weight: 600;
     letter-spacing: 0.5px;
     line-height: 20px;
-    height: 100%;
+    height: auto;
     width: 20px;
     writing-mode: vertical-lr;
     transform: rotate(-180deg);
@@ -111,6 +110,7 @@ export default {
 .suspicious-info {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     gap: 5px
 }

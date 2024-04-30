@@ -12,37 +12,21 @@ export default {
     props: {
         packet: {
             id: Number(),
-            ipsrc: String(),
-            ipdst: String(),
-            portsrc: Number(),
-            portdst: Number(),
             timestamp: Number(),
             incoming: Boolean(),
             payload: String(),
-            protocol: String(),
-            status: Number(),
+            pattern_match: Array(),
         }
     },
     computed: {
         stringdata() {
-            // const dataString = this.atou(this.packet.payload);
-            // const dump = this.highlightPatterns(dataString);
-            return this.escapeHtml(this.packet.payload)
+            const highlighted = this.highlightPatterns(this.packet.payload);
+            return this.escapeHtml(highlighted)
                 .split('\n')
                 .join('<br>');
         },
     },
     methods: {
-        atou(b64) {
-            const text = atob(b64);
-            const length = text.length;
-            const bytes = new Uint8Array(length);
-            for (let i = 0; i < length; i++) {
-                bytes[i] = text.charCodeAt(i);
-            }
-            const decoder = new TextDecoder();
-            return decoder.decode(bytes);
-        },
         escapeHtml(in_) {
             return in_.replace(/(<span style="background-color: #(?:[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})">|<\/span>)|[&<>"'/]/g, ($0, $1) => {
                 const entityMap = {
@@ -57,7 +41,24 @@ export default {
                 return $1 ? $1 : entityMap[$0];
             });
         },
+        highlightPatterns(raw) {
+            let offset = 0;
+            this.packet.pattern_match
+                .sort((a, b) => a.start_match - b.start_match)
+                .forEach(match => {
+                    const firstTag = `<span style="background-color: ${match.color}">`;
+                    const secondTag = '</span>';
 
+                    const positionStart = match.start_match + offset;
+                    raw = raw.substring(0, positionStart) + firstTag + raw.substring(positionStart);
+                    offset += firstTag.length;
+
+                    const positionEnd = match.end_match + offset;
+                    raw = raw.substring(0, positionEnd) + secondTag + raw.substring(positionEnd);
+                    offset += secondTag.length;
+                });
+            return raw;
+        },
     },
 
 }

@@ -1,9 +1,30 @@
+import json
 import re
 import backend.api.repository as repository
 
 from typing import List
 from backend.api.database import SessionLocal
-from backend.api.models import Packet, PatternMatch, Stream
+from backend.api.models import Packet, Pattern, PatternMatch, Stream
+import random
+
+
+def random_color():
+    color = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+    return color
+
+
+def load_rules():
+    with open("rules.json", "r") as file:
+        rules = dict(json.loads(file.read()))
+        with SessionLocal() as db:
+            if not repository.count_patterns(db) > 0:
+                for name, regex in rules.items():
+                    pattern = Pattern()
+                    pattern.name = name
+                    pattern.regex = regex
+                    pattern.color = random_color()
+
+                    repository.add_pattern(db, pattern)
 
 
 def search_pattern(stream: Stream):
@@ -23,6 +44,6 @@ def search_pattern(stream: Stream):
                     new_match.start_match = match.start()
                     new_match.end_match = match.end()
                     new_match.pattern_id = pattern.id
-                    print(match.group())
+                    repository.add_pattern_match(db, new_match)
 
         db.expunge(stream)

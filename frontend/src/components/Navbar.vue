@@ -4,15 +4,20 @@
         <span class="descriprion">TCP Traffic Analyzer</span>
     </div>
     <div class="navbar-control">
-        <button class="toggle-button" @click="$emit('toggleWs')">
+        <button class="toggle-button" @click="$emit('toggle-ws')">
             <img v-if="isLive" src="../assets/pause.svg" alt="run">
             <img v-else src="../assets/run.svg" alt="run">
         </button>
-        <div class="port-select-group">
-            <input class="port-input" maxlength="5" type="text" value="5000">
-            <button class="port-button">Select</button>
+        <div class="button-group">
+            <div class="port-select-group">
+                <input class="port-input" maxlength="5" type="number" value="5000" v-model="port">
+                <button class="port-button" @click="$emit('select-port', port)">Select port</button>
+            </div>
+            <button class="button" @click="$emit('update')">Update</button>
+            <button class="button" @click="$emit('show-patterns')">Patterns</button>
+            <button class="button" @click="$emit('clear-db')">Clear DB</button>
         </div>
-        <button class="button" @click="$emit('show-patterns')">Patterns</button>
+
     </div>
 </template>
 
@@ -21,6 +26,27 @@
 export default {
     props: {
         isLive: Boolean(),
+    },
+    emits: ["toggle-ws", "show-patterns", "select-port", "update"],
+    data() {
+        return {
+            port: null,
+        }
+    },
+    mounted() {
+        this.loadPort()
+    },
+    methods: {
+        loadPort() {
+            this.$http.get(`port`)
+                .then(response => {
+                    this.port = Number(response.data)
+                })
+                .catch(e => {
+                    console.error('Failed to load portion of streams:', e);
+                });
+        },
+
     },
 }
 </script>
@@ -36,14 +62,20 @@ export default {
     gap: 10px
 }
 
-.port-input{
-    width: 60px;
+.button-group {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.port-input {
+    width: 70px;
     border: 1px solid #406ce1;
     border-radius: 4px 0px 0px 4px;
     text-align: center;
 }
 
-.port-button{
+.port-button {
     border-color: transparent;
     background-color: #406ce1;
     color: white;
@@ -61,7 +93,7 @@ export default {
     padding: 5px;
 }
 
-.port-select-group{
+.port-select-group {
     display: flex;
     flex-direction: row;
 }

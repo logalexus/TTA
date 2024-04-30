@@ -23,6 +23,9 @@ export default {
         addStream(stream) {
             this.streams.unshift(stream);
             console.log(stream);
+        },
+        clearStreams(){
+            this.streams = [];
         }
     },
     components: { Stream, },

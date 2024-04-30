@@ -1,23 +1,24 @@
 from typing import Dict
-from backend.api.database import SessionLocal
-from backend.api.models import Packet, Stream
+from backend.api.models import Packet
 from backend.network.async_capture import AsyncLiveCapture
 from backend.network.flow import Flow
 from backend.network.dirty_stream import DirtyStream
 from asyncio import Queue
+from urllib.parse import unquote, unquote_plus
+from backend.network.stream_controller import StreamContoller
 
 import netifaces
-import backend.api.repository as repository
 
 
 class Sniffer():
-    def __init__(self, interface: str, port: int) -> None:
+    def __init__(self, interface: str, stream_controller: StreamContoller, port: int = None) -> None:
         self.dirty_streams: Dict[Flow, DirtyStream] = {}
         self.interface = interface
         self.target_port = port
         self.output_stream = Queue()
         self.packet_counter = 0
         self.stream_counter = 0
+        self.stream_controller = stream_controller
         self.local_ip = self.get_ip_address(self.interface)
 
     def get_ip_address(self, interface):
@@ -37,7 +38,7 @@ class Sniffer():
                 dirty_stream.packets.append(pkt)
                 if raw_packet.tcp.flags_fin == "1" and raw_packet.tcp.flags_ack == "1":
                     self.dirty_streams.pop(flow)
-                    stream = await self.save_stream(dirty_stream)
+                    stream = await self.stream_controller.save_stream(dirty_stream)
                     await self.output_stream.put(stream)
             elif raw_packet.tcp.flags_syn == "1":
                 dirty_stream = DirtyStream(self.stream_counter, flow)
@@ -52,7 +53,7 @@ class Sniffer():
             portdst=int(raw_packet.tcp.dstport),
             timestamp=int(float(raw_packet.sniff_timestamp)),
         )
-        
+
         packet.incoming = self.local_ip == packet.ipdst
 
         if "tcp.payload" in raw_packet.tcp._all_fields:
@@ -61,31 +62,11 @@ class Sniffer():
             payload = raw_packet.tcp.payload
             payload = bytes.fromhex(payload.replace(":", ""))
             payload = payload.decode(errors="ignore")
+            payload = unquote(payload)
+            payload = unquote_plus(payload)
             packet.payload = payload
 
         return packet
-
-    async def save_stream(self, dirty_stream: DirtyStream) -> Stream:
-        stream = Stream(
-            ipsrc=dirty_stream.flow.ipsrc,
-            ipdst=dirty_stream.flow.ipdst,
-            portsrc=dirty_stream.flow.portsrc,
-            portdst=dirty_stream.flow.portdst,
-            start_timestamp=dirty_stream.packets[0].timestamp,
-            end_timestamp=dirty_stream.packets[-1].timestamp,
-        )
-
-        with SessionLocal() as db:
-            stream = repository.add_stream(db, stream)
-
-            for packet in dirty_stream.packets:
-                if packet.payload:
-                    if packet.protocol == "HTTP":
-                        stream.protocol = "HTTP"
-                    packet.stream_id = stream.id
-                    repository.add_packet(db, packet)
-
-        return stream
 
     async def run(self):
         cap = AsyncLiveCapture(interface=self.interface,
@@ -93,5 +74,6 @@ class Sniffer():
         cap.set_debug()
 
         async for raw_packet in cap.sniff_continuously():
-            packet = self.handle_packet(raw_packet)
-            await self.assembly_streams(packet, raw_packet, target_port=self.target_port)
+            if self.target_port:
+                packet = self.handle_packet(raw_packet)
+                await self.assembly_streams(packet, raw_packet, target_port=self.target_port)

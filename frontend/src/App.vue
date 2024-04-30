@@ -1,6 +1,7 @@
 <template>
     <div id="app">
-        <Navbar @toggleWs="toggleWs" :isLive="isLive" @show-patterns="showPatternsModal = true" />
+        <Navbar @toggle-ws="toggleWs" :isLive="isLive" @show-patterns="showPatternsModal = true"
+            @select-port="selectPort" @clear-db="clearDB" @update="loadStreams"/>
         <div class="row">
             <Sidebar ref="sidebar" />
             <transition name="fade" mode="out-in">
@@ -32,7 +33,7 @@ export default {
             isLive: false,
             websocket: null,
             db: null,
-            showPatternsModal: true,
+            showPatternsModal: false,
         };
     },
     mounted() {
@@ -46,9 +47,11 @@ export default {
             this.websocket.onopen = () => {
                 this.isLive = true;
                 console.info('[WS] Connected');
+                this.$toast.info("Connected")
             };
             this.websocket.onclose = (ev) => {
                 console.info('[WS] Disconnected', ev.code, ev.reason);
+                this.$toast.info("Disconnected")
                 this.isLive = false;
                 this.websocket = null;
             };
@@ -68,8 +71,10 @@ export default {
             };
             this.websocket.onerror = (ev) => {
                 console.warn('[WS] Error', ev);
+                this.$toast.error("Error")
                 setTimeout(this.connectWs, 3000);
                 console.info('[WS] Reconnecting...');
+                this.$toast.info("Reconnecting...")
             };
 
         },
@@ -89,6 +94,7 @@ export default {
 
         },
         loadStreams() {
+            this.$refs.sidebar.clearStreams()
             this.$http.get(`streams`)
                 .then(response => {
                     console.log(response.data);
@@ -100,6 +106,36 @@ export default {
                     console.error('Failed to load portion of streams:', e);
                 });
         },
+        selectPort(port) {
+            console.log(port);
+            if (port == null) {
+                this.$toast.error("Port cannot be empty")
+                return
+            }
+            if (!Number.isInteger(port)) {
+                this.$toast.error("Port must be a number")
+                return
+            }
+            this.$http.post(`port/select?port=${port}`)
+                .then(response => {
+                    this.$toast.success("Port selected")
+                    this.$refs.sidebar.clearStreams()
+                    this.loadStreams()
+                })
+                .catch(e => {
+                    this.$toast.error(e.response.data.detail || "An error occurred")
+                });
+        },
+        clearDB() {
+            this.$http.post(`db/clear`)
+                .then(response => {
+                    this.$toast.success("Database cleared")
+                    this.$refs.sidebar.clearStreams()
+                })
+                .catch(e => {
+                    this.$toast.error(e.response.data.detail || "An error occurred")
+                });
+        }
     }
 
 }

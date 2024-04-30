@@ -1,11 +1,53 @@
+import datetime
+import json
 from typing import Dict
+from uuid import UUID
 from sqlalchemy import Column, String, Integer, Boolean
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
 from backend.api.database import Base
 
+from sqlalchemy.ext.declarative import DeclarativeMeta
 
-class Packet(Base):
+
+class OutputMixin(object):
+    RELATIONSHIPS_TO_DICT = False
+
+    def __iter__(self):
+        return self.to_dict().iteritems()
+
+    def to_dict(self, rel=None, backref=None):
+        if rel is None:
+            rel = self.RELATIONSHIPS_TO_DICT
+        res = {column.key: getattr(self, attr)
+               for attr, column in self.__mapper__.c.items()}
+        if rel:
+            for attr, relation in self.__mapper__.relationships.items():
+                # Avoid recursive loop between to tables.
+                if backref == relation.table:
+                    continue
+                value = getattr(self, attr)
+                if value is None:
+                    res[relation.key] = None
+                elif isinstance(value.__class__, DeclarativeMeta):
+                    res[relation.key] = value.to_dict(backref=self.__table__)
+                else:
+                    res[relation.key] = [i.to_dict(backref=self.__table__)
+                                         for i in value]
+        return res
+
+    def to_json(self, rel=None):
+        def extended_encoder(x):
+            if isinstance(x, datetime):
+                return x.isoformat()
+            if isinstance(x, UUID):
+                return str(x)
+        if rel is None:
+            rel = self.RELATIONSHIPS_TO_DICT
+        return json.dumps(self.to_dict(rel), default=extended_encoder)
+
+
+class Packet(OutputMixin, Base):
     __tablename__ = "packet"
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
@@ -23,7 +65,7 @@ class Packet(Base):
     pattern_match = relationship("PatternMatch", back_populates="packet")
 
 
-class Stream(Base):
+class Stream(OutputMixin, Base):
     __tablename__ = "stream"
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
@@ -37,21 +79,8 @@ class Stream(Base):
 
     packet = relationship("Packet", back_populates="stream")
 
-    @property
-    def to_dict(self) -> Dict[str, any]:
-        stream_info = {}
-        stream_info["id"] = self.id
-        stream_info["ipsrc"] = self.ipsrc
-        stream_info["ipdst"] = self.ipdst
-        stream_info["portsrc"] = self.portsrc
-        stream_info["portdst"] = self.portdst
-        stream_info["start_timestamp"] = self.start_timestamp
-        stream_info["end_timestamp"] = self.end_timestamp
-        stream_info["protocol"] = self.protocol
-        return stream_info
 
-
-class PatternMatch(Base):
+class PatternMatch(OutputMixin, Base):
     __tablename__ = "pattern_match"
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
@@ -59,12 +88,12 @@ class PatternMatch(Base):
     packet_id = Column(Integer, ForeignKey('packet.id'))
     start_match = Column(Integer)
     end_match = Column(Integer)
-    
+
     pattern = relationship("Pattern", back_populates="pattern_match")
     packet = relationship("Packet", back_populates="pattern_match")
 
 
-class Pattern(Base):
+class Pattern(OutputMixin, Base):
     __tablename__ = "pattern"
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
@@ -72,5 +101,12 @@ class Pattern(Base):
     regex = Column(String)
     color = Column(String)
     active = Column(Boolean)
-    
+
     pattern_match = relationship("PatternMatch", back_populates="pattern")
+
+
+class Service(OutputMixin, Base):
+    __tablename__ = "service"
+
+    id = Column(Integer, primary_key=True, unique=True, nullable=False)
+    port = Column(String)
