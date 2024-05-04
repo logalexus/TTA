@@ -38,6 +38,8 @@ class StreamContoller():
                 print(e)
 
     async def save_stream(self, dirty_stream: DirtyStream) -> Stream:
+       
+        
         stream = Stream(
             ipsrc=dirty_stream.flow.ipsrc,
             ipdst=dirty_stream.flow.ipdst,
@@ -56,5 +58,9 @@ class StreamContoller():
                         stream.protocol = "HTTP"
                     packet.stream_id = stream.id
                     repository.add_packet(db, packet)
+                    
+            preview = str(stream.packet[0].payload).split("\r\n")[0]
+            stream.preview = preview
+            db.commit()
 
         return stream

@@ -14,7 +14,7 @@ def random_color():
 
 
 def load_rules():
-    with open("rules.json", "r") as file:
+    with open("backend/rules.json", "r") as file:
         rules = dict(json.loads(file.read()))
         with SessionLocal() as db:
             if not repository.count_patterns(db) > 0:

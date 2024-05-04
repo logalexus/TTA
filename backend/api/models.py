@@ -75,6 +75,7 @@ class Stream(OutputMixin, Base):
     portdst = Column(Integer)
     start_timestamp = Column(Integer)
     end_timestamp = Column(Integer)
+    preview = Column(String)
     protocol = Column(String, default="TCP")
 
     packet = relationship("Packet", back_populates="stream")
@@ -102,7 +103,7 @@ class Pattern(OutputMixin, Base):
     color = Column(String)
     active = Column(Boolean)
 
-    pattern_match = relationship("PatternMatch", back_populates="pattern")
+    pattern_match = relationship("PatternMatch", cascade="all, delete", back_populates="pattern")
 
 
 class Service(OutputMixin, Base):

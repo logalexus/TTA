@@ -1,21 +1,26 @@
 import asyncio
-import backend.api.repository as repository
 
-from typing import List
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
+import backend.api.repository as repository
+import secrets
+
+from typing import Annotated, List
 from contextlib import asynccontextmanager
 from backend.analyze.analyzer import load_rules
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect, status
 from backend.network.stream_controller import StreamContoller
 from backend.network.sniffer import Sniffer
 from backend.api.models import Pattern
 from backend.api.database import SessionLocal, create_db
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    
+
     loop = asyncio.get_event_loop()
     loop.create_task(sniffer.run())
     loop.create_task(stream_controller.distribute_streams(
@@ -27,31 +32,60 @@ def get_current_port():
     with SessionLocal() as db:
         service = repository.get_service(db)
         if service:
-            return service.port
+            return int(service.port)
         else:
             return None
 
+
 create_db()
 load_rules()
+security = HTTPBasic()
 active_websockets: List[WebSocket] = []
 stream_controller = StreamContoller()
 port = get_current_port()
 sniffer = Sniffer("enp0s3", stream_controller, port)
 
+
+def verification(
+    credentials: Annotated[HTTPBasicCredentials, Depends(security)],
+):
+    current_username_bytes = credentials.username.encode("utf8")
+    correct_username_bytes = b"aa"
+    is_correct_username = secrets.compare_digest(
+        current_username_bytes, correct_username_bytes
+    )
+    current_password_bytes = credentials.password.encode("utf8")
+    correct_password_bytes = b"a"
+    is_correct_password = secrets.compare_digest(
+        current_password_bytes, correct_password_bytes
+    )
+    if not (is_correct_username and is_correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
+
 app = FastAPI(lifespan=lifespan)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://192.168.0.18:8080"],
+    allow_origins=[f"http://{sniffer.local_ip}:8080",
+                   f"http://{sniffer.local_ip}:8000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-class PatternModel(BaseModel):
-    name: str
-    regex: str
-    color: str
+@app.middleware("http")
+async def redirect_to_root(request: Request, call_next):
+    response = await call_next(request)
+    if response.status_code == 404:
+        return RedirectResponse("/")
+    return response
 
 
 @app.websocket("/api/ws")
@@ -65,18 +99,13 @@ async def streams_websocket(websocket: WebSocket):
         active_websockets.remove(websocket)
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.post("/api/db/clear")
-def read_root():
+@app.post("/api/db/clear", dependencies=[Depends(verification)])
+async def db_clear():
     with SessionLocal() as db:
         repository.clear_db(db)
 
 
-@app.get("/api/packets")
+@app.get("/api/packets", dependencies=[Depends(verification)])
 async def get_packets(stream_id: int):
     with SessionLocal() as db:
         packets = repository.get_packets(db, stream_id)
@@ -99,7 +128,7 @@ async def get_packets(stream_id: int):
         return packets_json
 
 
-@app.get("/api/streams")
+@app.get("/api/streams", dependencies=[Depends(verification)])
 async def get_streams():
     with SessionLocal() as db:
         streams = repository.get_streams(db)
@@ -116,13 +145,19 @@ async def get_streams():
         return streams_data
 
 
-@app.get("/api/patterns")
+@app.get("/api/patterns", dependencies=[Depends(verification)])
 async def get_patterns():
     with SessionLocal() as db:
         return repository.get_patterns(db)
 
 
-@app.post("/api/pattern/add")
+class PatternModel(BaseModel):
+    name: str
+    regex: str
+    color: str
+
+
+@app.post("/api/pattern/add", dependencies=[Depends(verification)])
 async def add_pattern(pattern: PatternModel):
     if not pattern.name:
         raise HTTPException(status_code=400, detail="Name cannot be empty")
@@ -149,7 +184,7 @@ async def add_pattern(pattern: PatternModel):
         repository.add_pattern(db, new_pattern)
 
 
-@app.post("/api/pattern/remove")
+@app.post("/api/pattern/remove", dependencies=[Depends(verification)])
 async def remove_pattern(name: str):
     with SessionLocal() as db:
         pattern = repository.get_pattern_by_name(db, name)
@@ -160,7 +195,7 @@ async def remove_pattern(name: str):
         repository.remove_pattern(db, pattern)
 
 
-@app.post("/api/port/select")
+@app.post("/api/port/select", dependencies=[Depends(verification)])
 async def select_port(port: int):
     with SessionLocal() as db:
         if port < 0 or port > 65536:
@@ -171,6 +206,9 @@ async def select_port(port: int):
         sniffer.target_port = port
 
 
-@app.get("/api/port")
+@app.get("/api/port", dependencies=[Depends(verification)])
 async def get_port():
     return get_current_port()
+
+
+app.mount("/", StaticFiles(directory="backend/static", html=True))

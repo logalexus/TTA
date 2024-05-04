@@ -131,6 +131,7 @@ export default {
                 .then(response => {
                     this.$toast.success("Database cleared")
                     this.$refs.sidebar.clearStreams()
+                    this.$router.push('/');
                 })
                 .catch(e => {
                     this.$toast.error(e.response.data.detail || "An error occurred")

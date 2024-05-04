@@ -6,6 +6,7 @@
             <div class="stream-info">
                 <span class="label status-label">#{{ stream.id }}</span>
                 <div class="info">
+                    <span class="ip">{{ stream.preview }}</span>
                     <div class="ip-addresses">
                         <span class="ip">{{ stream.ipsrc }}:{{ stream.portsrc }}</span>
                         <span class="arrow">➔</span>
@@ -37,6 +38,7 @@ export default {
             portsrc: Number(),
             portdst: Number(),
             status: Number(),
+            preview: String(),
             suspicious: Array(),
         }
     },

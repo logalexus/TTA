@@ -8,5 +8,6 @@
     "Blind SQLi1":"(?:(sleep\\((\\s*)(\\d*)(\\s*)\\)|benchmark\\((.*)\\,(.*)\\)))",
     "Blind SQLi2":"(\\s|\\%20|\\+)([Aa][Nn][Dd])(\\s|\\%20|\\+)(\\d+)\\=\\4",
     "Blind SQLi3":"(\\s|\\%20|\\+)([Aa][Nn][Dd])(\\s|\\%20|\\+)\\’(\\w+)\\’\\=\\’\\4",
-    "XSS":"(?:,\\s*(?:alert|showmodaldialog|eval)\\s*,)|(?::\\s*eval\\s*[^\\s])|([^:\\s\\w,.\\/?+-]\\s*)?(?<![a-z\\/_@])(\\s*return\\s*)?(?:(?:document\\s*\\.)?(?:.+\\/)?(?:alert|eval|msgbox|showmod(?:al|eless)dialog|showhelp|prompt|confirm|dialog|open))\\s*(?:[^.a-z\\s\\-]|(?:\\s*[^\\s\\w,.@\\/+-]))|(?:java[\\s\\/]*\\.[\\s\\/]*lang)|(?:\\w\\s*=\\s*new\\s+\\w+)|(?:&\\s*\\w+\\s*\\)[^,])|(?:\\+[\\W\\d]*new\\s+\\w+[\\W\\d]*\\+)|(?:document\\.\\w)"
+    "XSS":"(?:,\\s*(?:alert|showmodaldialog|eval)\\s*,)|(?::\\s*eval\\s*[^\\s])|([^:\\s\\w,.\\/?+-]\\s*)?(?<![a-z\\/_@])(\\s*return\\s*)?(?:(?:document\\s*\\.)?(?:.+\\/)?(?:alert|eval|msgbox|showmod(?:al|eless)dialog|showhelp|prompt|confirm|dialog|open))\\s*(?:[^.a-z\\s\\-]|(?:\\s*[^\\s\\w,.@\\/+-]))|(?:java[\\s\\/]*\\.[\\s\\/]*lang)|(?:\\w\\s*=\\s*new\\s+\\w+)|(?:&\\s*\\w+\\s*\\)[^,])|(?:\\+[\\W\\d]*new\\s+\\w+[\\W\\d]*\\+)|(?:document\\.\\w)",
+    "PathTraversal":"(?:(?:\\/|\\\\)?\\.+(\\/|\\\\)(?:\\.+)?)|(?:\\w\\.exe\\??\\s)|(?:;\\s*\\w+\\s*\\/[\\w*-]+\\/)| (?:\\d\\.\\dx\\|)| (?:%(?:c0\\.|af\\.|5c\\.))|(?:\\/(?:%2e){2})"
 }
