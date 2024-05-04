@@ -1,3 +1,4 @@
+import os
 import asyncio
 
 from fastapi.responses import RedirectResponse
@@ -43,19 +44,20 @@ security = HTTPBasic()
 active_websockets: List[WebSocket] = []
 stream_controller = StreamContoller()
 port = get_current_port()
-sniffer = Sniffer("enp0s3", stream_controller, port)
+interface = os.environ.get("TTA_INTERFACE")
+sniffer = Sniffer(interface, stream_controller, port)
 
 
 def verification(
     credentials: Annotated[HTTPBasicCredentials, Depends(security)],
 ):
     current_username_bytes = credentials.username.encode("utf8")
-    correct_username_bytes = b"aa"
+    correct_username_bytes = os.environ.get("TTA_LOGIN").encode()
     is_correct_username = secrets.compare_digest(
         current_username_bytes, correct_username_bytes
     )
     current_password_bytes = credentials.password.encode("utf8")
-    correct_password_bytes = b"a"
+    correct_password_bytes = os.environ.get("TTA_PASSWORD").encode()
     is_correct_password = secrets.compare_digest(
         current_password_bytes, correct_password_bytes
     )
