@@ -36,7 +36,7 @@ class Sniffer():
             if flow in self.dirty_streams:
                 dirty_stream = self.dirty_streams[flow]
                 dirty_stream.packets.append(pkt)
-                if raw_packet.tcp.flags_fin == "1" and raw_packet.tcp.flags_ack == "1":
+                if (raw_packet.tcp.flags_fin == "1" and raw_packet.tcp.flags_ack == "1") or raw_packet.tcp.flags_reset == "1":
                     self.dirty_streams.pop(flow)
                     stream = await self.stream_controller.save_stream(dirty_stream)
                     await self.output_stream.put(stream)
@@ -72,8 +72,10 @@ class Sniffer():
         cap = AsyncLiveCapture(interface=self.interface,
                                display_filter='tcp')
         cap.set_debug()
-
         async for raw_packet in cap.sniff_continuously():
             if self.target_port:
-                packet = self.handle_packet(raw_packet)
-                await self.assembly_streams(packet, raw_packet, target_port=self.target_port)
+                try:
+                    packet = self.handle_packet(raw_packet)
+                    await self.assembly_streams(packet, raw_packet, target_port=self.target_port)
+                except Exception as e:
+                    print(f"Error: {e}")

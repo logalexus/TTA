@@ -6,8 +6,8 @@
         </div>
         <div class="text">{{ pattern.regex }}</div>
         <div class="control">
-            <button v-if="enabled" class="button button-activated" @click="enabled = false">Disable</button>
-            <button v-else class="button button-diactivated" @click="enabled = true">Enable</button>
+            <!-- <button v-if="enabled" class="button button-activated" @click="enabled = false">Disable</button>
+            <button v-else class="button button-diactivated" @click="enabled = true">Enable</button> -->
             <button class="button remove-button" @click="$emit('remove-pattern', pattern)">Remove</button>
         </div>
     </li>
