@@ -40,7 +40,3 @@ http://localhost:8000
 
 ![image](https://github.com/logalexus/TTA/assets/83642746/3ab60d5b-831f-4aa0-97f3-5e89683680ae)
 
-
-## License
-
-MIT License
